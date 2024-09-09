@@ -36,6 +36,7 @@ const start = async () => {
         }
       }
       if (errors.length > 0) {
+        console.log("Sending errors", errors);
         bot.sendMessage(
           TELEGRAM_USER_ID,
           `Regexp failed. Errors: ${errors
