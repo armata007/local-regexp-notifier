@@ -1,8 +1,9 @@
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
 import { CronJob } from "cron";
-
 import config from "./config";
+
+console.log(`Current time is ${new Date().toLocaleString()}`);
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 if (typeof TELEGRAM_TOKEN !== "string") {
@@ -18,6 +19,12 @@ if (TELEGRAM_USER_ID === 0) {
 const CRON_TIME = process.env.CRON_TIME;
 if (typeof CRON_TIME !== "string") {
   console.error("There is no CRON_TIME");
+  process.exit(1);
+}
+
+const TIMEZONE = process.env.TIMEZONE;
+if (typeof TIMEZONE !== "string") {
+  console.error("There is no TIMEZONE");
   process.exit(1);
 }
 
@@ -56,8 +63,14 @@ const start = async () => {
   }
 };
 
-const job = new CronJob(CRON_TIME, function () {
-  start();
-});
-
-job.start();
+new CronJob(
+  CRON_TIME,
+  function () {
+    start();
+  },
+  null,
+  true,
+  TIMEZONE,
+  null,
+  true
+);
