@@ -1,0 +1,17 @@
+const config = [
+  {
+    url: "http://localhost:3000/",
+    regexps: [
+      {
+        regexp: new RegExp(/Unwanted text/),
+        message: "There is Unwanted text in page",
+      },
+      {
+        regexp: new RegExp(/(?!Required text)/),
+        message: "There is no Required text in page",
+      },
+    ],
+  },
+];
+
+export default config;
