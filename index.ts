@@ -1,5 +1,6 @@
-import TelegramBot from "node-telegram-bot-api";
 import "dotenv/config";
+import TelegramBot from "node-telegram-bot-api";
+import { CronJob } from "cron";
 
 import config from "./config";
 
@@ -8,14 +9,20 @@ if (typeof TELEGRAM_TOKEN !== "string") {
   console.error("There is no TELEGRAM_TOKEN");
   process.exit(1);
 }
-const USER_ID = process.env.USER_ID;
+const TELEGRAM_USER_ID = Number(process.env.TELEGRAM_USER_ID);
+if (TELEGRAM_USER_ID === 0) {
+  console.error("There is no TELEGRAM_USER_ID");
+  process.exit(1);
+}
 
-if (typeof USER_ID !== "number") {
-  console.error("There is no USER_ID");
+const CRON_TIME = process.env.CRON_TIME;
+if (typeof CRON_TIME !== "string") {
+  console.error("There is no CRON_TIME");
   process.exit(1);
 }
 
 const start = async () => {
+  console.log("Running check");
   const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: false });
   for (let i = 0; i < config.length; i += 1) {
     const check = config[i];
@@ -30,7 +37,7 @@ const start = async () => {
       }
       if (errors.length > 0) {
         bot.sendMessage(
-          USER_ID,
+          TELEGRAM_USER_ID,
           `Regexp failed. Errors: ${errors
             .map((error) => `"${error}"`)
             .join(", ")}.`
@@ -39,12 +46,17 @@ const start = async () => {
     } catch (error) {
       if (error instanceof Error) {
         bot.sendMessage(
-          USER_ID,
+          TELEGRAM_USER_ID,
           `Automatic check failed. Error: "${error.message}".`
         );
       }
     }
+    console.log("Check finished");
   }
 };
 
-start();
+const job = new CronJob(CRON_TIME, function () {
+  start();
+});
+
+job.start();
