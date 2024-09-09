@@ -100,6 +100,7 @@ if (ALL_GOOD_CRON_TIME !== "") {
     null,
     true,
     TIMEZONE,
-    null, true
+    null,
+    true
   );
 }
