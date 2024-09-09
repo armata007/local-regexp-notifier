@@ -7,7 +7,7 @@ const config = [
         message: "There is Unwanted text in page",
       },
       {
-        regexp: new RegExp(/(?!Required text)/),
+        regexp: new RegExp(/^(?!.*Required text).+$/, 's'),
         message: "There is no Required text in page",
       },
     ],
