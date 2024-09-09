@@ -20,6 +20,8 @@ local-regexp-notifier is a simple library which can be hosted in docker to notif
    1. `TELEGRAM_TOKEN` - Create a bot at @botfather in Telegram with `/newbot` command and put generated token here
    1. `TELEGRAM_USER_ID` - This is your user id in telegram
    1. `CRON_TIME` - crontab string (how often you want the checks to run)
+   1. `TIMEZONE` - set to your timezone
+   1. `ALL_GOOD_CRON_TIME` - crontab string which sends telegram message `All good - local notifier is working in background`. If you want it disabled set it to empty string, for example `ALL_GOOD_CRON_TIME=""`.
 1. Copy `config.ts.example` to `config.ts`
    ```bash
    cp config.ts.example config.ts

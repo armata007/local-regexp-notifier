@@ -22,6 +22,12 @@ if (typeof CRON_TIME !== "string") {
   process.exit(1);
 }
 
+const ALL_GOOD_CRON_TIME = process.env.ALL_GOOD_CRON_TIME;
+if (typeof ALL_GOOD_CRON_TIME !== "string") {
+  console.error("There is no ALL_GOOD_CRON_TIME");
+  process.exit(1);
+}
+
 const TIMEZONE = process.env.TIMEZONE;
 if (typeof TIMEZONE !== "string") {
   console.error("There is no TIMEZONE");
@@ -63,6 +69,16 @@ const start = async () => {
   }
 };
 
+const allGood = async () => {
+  console.log("Running all good");
+  const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: false });
+  bot.sendMessage(
+    TELEGRAM_USER_ID,
+    "All good - local notifier is working in the background"
+  );
+  console.log("All good done");
+};
+
 new CronJob(
   CRON_TIME,
   function () {
@@ -74,3 +90,16 @@ new CronJob(
   null,
   true
 );
+
+if (ALL_GOOD_CRON_TIME !== "") {
+  new CronJob(
+    ALL_GOOD_CRON_TIME,
+    function () {
+      allGood();
+    },
+    null,
+    true,
+    TIMEZONE,
+    null, true
+  );
+}
