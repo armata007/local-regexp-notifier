@@ -8,10 +8,23 @@ import config from "../config";
 console.log(`Current time is ${new Date().toLocaleString()}`);
 
 const HEARTBEAT_FILE = process.env.HEARTBEAT_FILE ?? "/tmp/heartbeat";
+const HEARTBEAT_GRACE_SECONDS = Number(
+  process.env.HEARTBEAT_GRACE_SECONDS ?? 120
+);
 
-const touchHeartbeat = () => {
+const jobs: CronJob[] = [];
+
+// The file holds "healthy until" so the healthcheck never has to know the cron schedule.
+const writeHeartbeat = () => {
   try {
-    writeFileSync(HEARTBEAT_FILE, String(Math.floor(Date.now() / 1000)));
+    const nextTicks = jobs
+      .map((job) => job.nextDate().toMillis())
+      .filter((millis) => Number.isFinite(millis));
+    const nextTick = nextTicks.length ? Math.min(...nextTicks) : Date.now();
+    writeFileSync(
+      HEARTBEAT_FILE,
+      String(Math.floor(nextTick / 1000) + HEARTBEAT_GRACE_SECONDS)
+    );
   } catch (error) {
     console.error("Could not write heartbeat", error);
   }
@@ -120,34 +133,38 @@ const allGood = async () => {
   );
   console.log("All good done");
 };
-touchHeartbeat();
-
 for (let i = 0; i < config.length; i += 1) {
-  new CronJob(
-    config[i].cronTime,
-    function () {
-      touchHeartbeat();
-      start(config[i]);
-    },
-    null,
-    true,
-    TIMEZONE,
-    null,
-    true
+  jobs.push(
+    new CronJob(
+      config[i].cronTime,
+      function () {
+        writeHeartbeat();
+        start(config[i]);
+      },
+      null,
+      true,
+      TIMEZONE,
+      null,
+      true
+    )
   );
 }
 
 if (ALL_GOOD_CRON_TIME !== "") {
-  new CronJob(
-    ALL_GOOD_CRON_TIME,
-    function () {
-      touchHeartbeat();
-      allGood();
-    },
-    null,
-    true,
-    TIMEZONE,
-    null,
-    true
+  jobs.push(
+    new CronJob(
+      ALL_GOOD_CRON_TIME,
+      function () {
+        writeHeartbeat();
+        allGood();
+      },
+      null,
+      true,
+      TIMEZONE,
+      null,
+      true
+    )
   );
 }
+
+writeHeartbeat();

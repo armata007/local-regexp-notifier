@@ -21,7 +21,7 @@ local-notifier is a simple library which can be hosted in docker to notify you v
    1. `TELEGRAM_USER_ID` - This is your user id in telegram
    2. `TIMEZONE` - set to your timezone
    3. `ALL_GOOD_CRON_TIME` - crontab string which sends telegram message `All good - local notifier is working in background`. If you want it disabled set it to empty string, for example `ALL_GOOD_CRON_TIME=""`.
-   4. `HEARTBEAT_MAX_AGE_SECONDS` - optional, defaults to `300`. The Docker healthcheck marks the container unhealthy when no cron tick has fired for this many seconds, so it must be longer than the longest `cronTime` interval in your `config.ts`.
+   4. `HEARTBEAT_GRACE_SECONDS` - optional, defaults to `120`. How late a cron tick may be before the Docker healthcheck marks the container unhealthy. The deadline is derived from your `config.ts` schedule automatically, so this does not need tuning when you change a `cronTime`.
 2. Copy `config.ts.example` to `config.ts`
    ```bash
    cp config.ts.example config.ts
