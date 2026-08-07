@@ -4,3 +4,11 @@ services:
     restart: unless-stopped
     build: .
     command: yarn start
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - test $$(( $$(date +%s) - $$(cat /tmp/heartbeat) )) -lt ${HEARTBEAT_MAX_AGE_SECONDS:-300}
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

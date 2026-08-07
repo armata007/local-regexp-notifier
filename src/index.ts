@@ -1,10 +1,21 @@
 import "dotenv/config";
+import { writeFileSync } from "fs";
 import TelegramBot from "node-telegram-bot-api";
 import { CronJob } from "cron";
 import { JsonCheck, RegexpCheck } from "./types";
 import config from "../config";
 
 console.log(`Current time is ${new Date().toLocaleString()}`);
+
+const HEARTBEAT_FILE = process.env.HEARTBEAT_FILE ?? "/tmp/heartbeat";
+
+const touchHeartbeat = () => {
+  try {
+    writeFileSync(HEARTBEAT_FILE, String(Math.floor(Date.now() / 1000)));
+  } catch (error) {
+    console.error("Could not write heartbeat", error);
+  }
+};
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 if (typeof TELEGRAM_TOKEN !== "string") {
@@ -109,10 +120,13 @@ const allGood = async () => {
   );
   console.log("All good done");
 };
+touchHeartbeat();
+
 for (let i = 0; i < config.length; i += 1) {
   new CronJob(
     config[i].cronTime,
     function () {
+      touchHeartbeat();
       start(config[i]);
     },
     null,
@@ -127,6 +141,7 @@ if (ALL_GOOD_CRON_TIME !== "") {
   new CronJob(
     ALL_GOOD_CRON_TIME,
     function () {
+      touchHeartbeat();
       allGood();
     },
     null,
